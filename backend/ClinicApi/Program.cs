@@ -5,11 +5,33 @@ using Microsoft.IdentityModel.Tokens;
 using System.Text;
 
 var builder = WebApplication.CreateBuilder(args);
-
-// 1. Register services
+// Miles B: this is where we register services and configure the app. It's a bit of a kitchen sink, but for a small app it's manageable. In larger apps, you'd want to break this out into extension methods and separate files for better organization.
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(options =>
+{
+    options.AddSecurityDefinition("Bearer", new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+    {
+        Description = "Enter: Bearer {your token}",
+        Name = "Authorization",
+        In = Microsoft.OpenApi.Models.ParameterLocation.Header,
+        Type = Microsoft.OpenApi.Models.SecuritySchemeType.ApiKey
+    });
+    options.AddSecurityRequirement(new Microsoft.OpenApi.Models.OpenApiSecurityRequirement
+    {
+        {
+            new Microsoft.OpenApi.Models.OpenApiSecurityScheme
+            {
+                Reference = new Microsoft.OpenApi.Models.OpenApiReference
+                {
+                    Type = Microsoft.OpenApi.Models.ReferenceType.SecurityScheme,
+                    Id = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
 
 builder.Services.AddDbContext<ClinicDbContext>(options =>
     options.UseSqlite(builder.Configuration.GetConnectionString("DefaultConnection")));
@@ -46,7 +68,7 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// 2. Apply migrations + seed (runs once at startup, before serving requests)
+// Miles B: ensure database is created and has an admin user on startup and for testing purposes. In production, you'd want a more robust seeding strategy and not hardcode credentials.
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<ClinicDbContext>();
@@ -63,7 +85,6 @@ using (var scope = app.Services.CreateScope())
     }
 }
 
-// 3. Configure the HTTP pipeline (order matters: each step below sees the request after the one above it)
 if (app.Environment.IsDevelopment())
 {
     app.UseSwagger();
