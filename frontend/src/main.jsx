@@ -26,6 +26,12 @@ const theme = createTheme({
       primary: '#0f1e35',
       secondary: '#5a6c8a',
     },
+    warning: {
+      main: '#db1a10',
+      light: '#ffad42',
+      dark: '#bb4d00',
+      contrastText: '#ffffff',
+    },
   },
   components: {
     MuiAppBar: {

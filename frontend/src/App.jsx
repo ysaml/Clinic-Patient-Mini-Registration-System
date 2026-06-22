@@ -3,7 +3,6 @@ import { AuthProvider } from './context/AuthProvider';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
 import PatientList from './pages/PatientList';
-import PatientForm from './pages/PatientForm';
 import { ToastProvider } from './context/ToastProvider';
 
 export default function App() {
@@ -16,12 +15,6 @@ export default function App() {
             <Route path="/login" element={<Login />} />
             <Route path="/patients" element={
               <ProtectedRoute><PatientList /></ProtectedRoute>
-            } />
-            <Route path="/patients/new" element={
-              <ProtectedRoute><PatientForm /></ProtectedRoute>
-            } />
-            <Route path="/patients/:id/edit" element={
-              <ProtectedRoute><PatientForm /></ProtectedRoute>
             } />
           </Routes>
         </BrowserRouter>

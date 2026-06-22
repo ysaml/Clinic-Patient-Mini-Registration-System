@@ -1,14 +1,21 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import {
   Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Skeleton, Typography, IconButton, Dialog, DialogTitle, DialogContent,
-  DialogActions, AppBar, Toolbar
+  DialogActions, AppBar, Toolbar, TextField, InputAdornment, Select, MenuItem,
+  FormControl, InputLabel, TableSortLabel, Chip, Stack
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
 import LogoutIcon from '@mui/icons-material/Logout';
+import SearchIcon from '@mui/icons-material/Search';
+import FilterListIcon from '@mui/icons-material/FilterList';
+import ClearIcon from '@mui/icons-material/Clear';
+import PeopleIcon from '@mui/icons-material/People';
+import WarningIcon from '@mui/icons-material/Warning';
+import InfoIcon from '@mui/icons-material/Info';
 import apiClient from '../api/client';
 import AddPatientModal from '../components/AddPatientModal';
 import { useAuth } from '../context/useAuth';
@@ -19,6 +26,11 @@ export default function PatientList() {
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
   const [addModalOpen, setAddModalOpen] = useState(false);
+  const [editTarget, setEditTarget] = useState(null);
+  const [searchTerm, setSearchTerm] = useState('');
+  const [genderFilter, setGenderFilter] = useState('All');
+  const [sortField, setSortField] = useState('firstName');
+  const [sortDirection, setSortDirection] = useState('asc');
   const { logout } = useAuth();
   const { showToast } = useToast();
   const navigate = useNavigate();
@@ -39,6 +51,50 @@ export default function PatientList() {
 
   const getPatientName = (patient) =>
     [patient.firstName, patient.middleName, patient.lastName].filter(Boolean).join(' ');
+
+  const handleSort = (field) => {
+    if (sortField === field) {
+      setSortDirection(sortDirection === 'asc' ? 'desc' : 'asc');
+    } else {
+      setSortField(field);
+      setSortDirection('asc');
+    }
+  };
+
+  const filteredAndSortedPatients = patients
+    .filter((p) => {
+      const matchesSearch = searchTerm === '' || 
+        getPatientName(p).toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.contactNumber?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.address?.toLowerCase().includes(searchTerm.toLowerCase());
+      
+      const matchesGender = genderFilter === 'All' || p.gender === genderFilter;
+      
+      return matchesSearch && matchesGender;
+    })
+    .sort((a, b) => {
+      let aVal = a[sortField];
+      let bVal = b[sortField];
+
+      if (sortField === 'birthDate') {
+        aVal = new Date(aVal);
+        bVal = new Date(bVal);
+      } else if (typeof aVal === 'string') {
+        aVal = aVal?.toLowerCase() || '';
+        bVal = bVal?.toLowerCase() || '';
+      }
+
+      if (aVal < bVal) return sortDirection === 'asc' ? -1 : 1;
+      if (aVal > bVal) return sortDirection === 'asc' ? 1 : -1;
+      return 0;
+    });
+
+  const clearFilters = () => {
+    setSearchTerm('');
+    setGenderFilter('All');
+  };
+
+  const hasActiveFilters = searchTerm !== '' || genderFilter !== 'All';
 
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -64,36 +120,183 @@ export default function PatientList() {
     navigate('/login');
   };
 
+  const handleEditPatient = (patient) => {
+    setEditTarget(patient);
+  };
+
+  const handleClosePatientModal = () => {
+    setAddModalOpen(false);
+    setEditTarget(null);
+  };
+
   return (
     <Box>
       <AppBar position="static">
         <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Typography variant="h6">Patient Records</Typography>
+          <Stack direction="row" alignItems="center" gap={1}>
+            <PeopleIcon fontSize="large" />
+            <Typography variant="h6" sx={{ mt: 0.25 }}>Patient Records</Typography>
+          </Stack>
           <Button color="secondary" startIcon={<LogoutIcon />} onClick={handleLogout}>Logout</Button>
         </Toolbar>
       </AppBar>
 
       <Box p={3}>
-        <Box sx={{ display: 'flex', justifyContent: 'space-between', mb: 2 }}>
-          <Typography variant="subtitle1" color="text.secondary">
-            {loading ? 'Loading...' : `${patients.length} patient${patients.length !== 1 ? 's' : ''}`}
-          </Typography>
-          <Button color="secondary" variant="contained" startIcon={<AddIcon />} onClick={() => setAddModalOpen(true)}>
-            Add Patient
-          </Button>
+        <Box
+          sx={{
+            p: 2,
+            mb: 2,
+            borderRadius: 2,
+            bgcolor: 'background.paper',
+          }}
+        >
+          <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'stretch', md: 'center' }}>
+            <TextField
+              fullWidth
+              placeholder="Search by name, contact, or address..."
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              size="small"
+              InputProps={{
+                startAdornment: (
+                  <InputAdornment position="start">
+                    <SearchIcon color="action" />
+                  </InputAdornment>
+                ),
+                endAdornment: searchTerm && (
+                  <InputAdornment position="end">
+                    <IconButton size="small" onClick={() => setSearchTerm('')}>
+                      <ClearIcon fontSize="small" />
+                    </IconButton>
+                  </InputAdornment>
+                ),
+              }}
+            />
+            <FormControl size="small" sx={{ minWidth: 150 }}>
+              <InputLabel>Gender</InputLabel>
+              <Select
+                value={genderFilter}
+                label="Gender"
+                onChange={(e) => setGenderFilter(e.target.value)}
+              >
+                <MenuItem value="All">All</MenuItem>
+                <MenuItem value="Male">Male</MenuItem>
+                <MenuItem value="Female">Female</MenuItem>
+                <MenuItem value="Other">Other</MenuItem>
+              </Select>
+            </FormControl>
+            <Button
+              color="secondary"
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setAddModalOpen(true)}
+              size="large"
+              sx={{ whiteSpace: 'nowrap', minWidth: 150 }}
+            >
+              Add Patient
+            </Button>
+            {hasActiveFilters && (
+              <Button
+                variant="outlined"
+                startIcon={<ClearIcon />}
+                onClick={clearFilters}
+                size="small"
+                sx={{ whiteSpace: 'nowrap' }}
+              >
+                Clear
+              </Button>
+            )}
+          </Stack>
+          
+          {!loading && (
+            <Stack direction="row" alignItems="center" gap={1} sx={{ mt: 2 }}>
+              <InfoIcon fontSize="small" color="action" />
+              <Typography variant="body2" color="text.secondary">
+                Showing <strong>{filteredAndSortedPatients.length}</strong> of <strong>{patients.length}</strong> patient{patients.length !== 1 ? 's' : ''}
+              </Typography>
+              {hasActiveFilters && (
+                <Chip 
+                  label="Filtered" 
+                  size="small" 
+                  color="primary" 
+                  icon={<FilterListIcon />} 
+                />
+              )}
+            </Stack>
+          )}
         </Box>
 
-        <TableContainer component={Paper}>
-          <Table>
+        <TableContainer
+          component={Paper}
+          elevation={0}
+          sx={{ maxHeight: 600, boxShadow: 'none', borderRadius: 2, overflow: 'auto' }}
+        >
+          <Table stickyHeader>
             <TableHead>
               <TableRow>
-                <TableCell>First Name</TableCell>
-                <TableCell>Middle Name</TableCell>
-                <TableCell>Last Name</TableCell>
-                <TableCell>Birth Date</TableCell>
-                <TableCell>Gender</TableCell>
-                <TableCell>Contact</TableCell>
-                <TableCell>Address</TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === 'firstName'}
+                    direction={sortField === 'firstName' ? sortDirection : 'asc'}
+                    onClick={() => handleSort('firstName')}
+                  >
+                    First Name
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === 'middleName'}
+                    direction={sortField === 'middleName' ? sortDirection : 'asc'}
+                    onClick={() => handleSort('middleName')}
+                  >
+                    Middle Name
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === 'lastName'}
+                    direction={sortField === 'lastName' ? sortDirection : 'asc'}
+                    onClick={() => handleSort('lastName')}
+                  >
+                    Last Name
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === 'birthDate'}
+                    direction={sortField === 'birthDate' ? sortDirection : 'asc'}
+                    onClick={() => handleSort('birthDate')}
+                  >
+                    Birth Date
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === 'gender'}
+                    direction={sortField === 'gender' ? sortDirection : 'asc'}
+                    onClick={() => handleSort('gender')}
+                  >
+                    Gender
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === 'contactNumber'}
+                    direction={sortField === 'contactNumber' ? sortDirection : 'asc'}
+                    onClick={() => handleSort('contactNumber')}
+                  >
+                    Contact
+                  </TableSortLabel>
+                </TableCell>
+                <TableCell>
+                  <TableSortLabel
+                    active={sortField === 'address'}
+                    direction={sortField === 'address' ? sortDirection : 'asc'}
+                    onClick={() => handleSort('address')}
+                  >
+                    Address
+                  </TableSortLabel>
+                </TableCell>
                 <TableCell align="right">Actions</TableCell>
               </TableRow>
             </TableHead>
@@ -114,8 +317,20 @@ export default function PatientList() {
                     </Typography>
                   </TableCell>
                 </TableRow>
+              ) : filteredAndSortedPatients.length === 0 ? (
+                <TableRow>
+                  <TableCell colSpan={8} align="center" sx={{ py: 6 }}>
+                    <SearchIcon sx={{ fontSize: 48, color: 'text.disabled', mb: 1 }} />
+                    <Typography color="text.secondary">
+                      No patients match your search criteria
+                    </Typography>
+                    <Button size="small" onClick={clearFilters} sx={{ mt: 1 }}>
+                      Clear filters
+                    </Button>
+                  </TableCell>
+                </TableRow>
               ) : (
-                patients.map((p) => (
+                filteredAndSortedPatients.map((p) => (
                   <TableRow key={p.id} hover>
                     <TableCell>{p.firstName}</TableCell>
                     <TableCell>{p.middleName}</TableCell>
@@ -123,12 +338,17 @@ export default function PatientList() {
                     <TableCell>{new Date(p.birthDate).toLocaleDateString()}</TableCell>
                     <TableCell>{p.gender}</TableCell>
                     <TableCell>{p.contactNumber}</TableCell>
-                    <TableCell>{p.address}</TableCell>
+                    <TableCell
+                      title={p.address}
+                      sx={{ maxWidth: 180, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}
+                    >
+                      {p.address}
+                    </TableCell>
                     <TableCell align="right">
-                      <IconButton component={Link} to={`/patients/${p.id}/edit`} size="small" color="primary">
+                      <IconButton size="small" color="primary" onClick={() => handleEditPatient(p)}>
                         <EditIcon fontSize="small" />
                       </IconButton>
-                      <IconButton size="small" color="secondary" onClick={() => setDeleteTarget(p)}>
+                      <IconButton size="small" color="warning" onClick={() => setDeleteTarget(p)}>
                         <DeleteIcon fontSize="small" />
                       </IconButton>
                     </TableCell>
@@ -141,10 +361,13 @@ export default function PatientList() {
       </Box>
 
       <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)}>
-        <DialogTitle>Delete patient record?</DialogTitle>
+        <DialogTitle sx={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: 1, color: 'warning.main' }}>
+          <WarningIcon fontSize="large" />
+          Delete Record
+        </DialogTitle>
         <DialogContent>
-          <Typography>
-            This will permanently remove {deleteTarget ? getPatientName(deleteTarget) : 'this patient'}'s record. This cannot be undone.
+          <Typography color="text.secondary">
+            Permanently remove <strong>{deleteTarget ? getPatientName(deleteTarget) : 'this patient'}</strong>'s record? This cannot be undone.
           </Typography>
         </DialogContent>
         <DialogActions>
@@ -155,9 +378,18 @@ export default function PatientList() {
 
       <AddPatientModal
         open={addModalOpen}
-        onClose={() => setAddModalOpen(false)}
+        onClose={handleClosePatientModal}
         onSaved={() => loadPatients()}
       />
+
+      {editTarget && (
+        <AddPatientModal
+          open
+          patient={editTarget}
+          onClose={handleClosePatientModal}
+          onSaved={() => loadPatients()}
+        />
+      )}
     </Box>
   );
 }
