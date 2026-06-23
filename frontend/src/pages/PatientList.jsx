@@ -1,24 +1,20 @@
 import { useCallback, useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
 import {
   Box, Button, Table, TableBody, TableCell, TableContainer, TableHead, TableRow,
   Paper, Skeleton, Typography, IconButton, Dialog, DialogTitle, DialogContent,
-  DialogActions, AppBar, Toolbar, TextField, InputAdornment, Select, MenuItem,
+  DialogActions, TextField, InputAdornment, Select, MenuItem,
   FormControl, InputLabel, TableSortLabel, Chip, Stack
 } from '@mui/material';
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
 import AddIcon from '@mui/icons-material/Add';
-import LogoutIcon from '@mui/icons-material/Logout';
 import SearchIcon from '@mui/icons-material/Search';
 import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
-import PeopleIcon from '@mui/icons-material/People';
 import WarningIcon from '@mui/icons-material/Warning';
 import InfoIcon from '@mui/icons-material/Info';
 import apiClient from '../api/client';
 import AddPatientModal from '../components/AddPatientModal';
-import { useAuth } from '../context/useAuth';
 import { useToast } from '../context/useToast';
 
 export default function PatientList() {
@@ -31,9 +27,7 @@ export default function PatientList() {
   const [genderFilter, setGenderFilter] = useState('All');
   const [sortField, setSortField] = useState('firstName');
   const [sortDirection, setSortDirection] = useState('asc');
-  const { logout } = useAuth();
   const { showToast } = useToast();
-  const navigate = useNavigate();
 
   const loadPatients = useCallback(async (showLoading = true) => {
     if (showLoading) {
@@ -115,11 +109,6 @@ export default function PatientList() {
     }
   };
 
-  const handleLogout = () => {
-    logout();
-    navigate('/login');
-  };
-
   const handleEditPatient = (patient) => {
     setEditTarget(patient);
   };
@@ -130,24 +119,17 @@ export default function PatientList() {
   };
 
   return (
-    <Box>
-      <AppBar position="static">
-        <Toolbar sx={{ justifyContent: 'space-between' }}>
-          <Stack direction="row" alignItems="center" gap={1}>
-            <PeopleIcon fontSize="large" />
-            <Typography variant="h6" sx={{ mt: 0.25 }}>Patient Records</Typography>
-          </Stack>
-          <Button color="secondary" startIcon={<LogoutIcon />} onClick={handleLogout}>Logout</Button>
-        </Toolbar>
-      </AppBar>
-
-      <Box p={3}>
-        <Box
-          sx={{
+    <Box  sx={{
             p: 2,
             mb: 2,
             borderRadius: 2,
             bgcolor: 'background.paper',
+          }} >
+      <Box p={2}>
+        <Box
+          sx={{
+            p: 1,
+            mb: 1,
           }}
         >
           <Stack direction={{ xs: 'column', md: 'row' }} spacing={2} alignItems={{ xs: 'stretch', md: 'center' }}>
@@ -182,19 +164,8 @@ export default function PatientList() {
                 <MenuItem value="All">All</MenuItem>
                 <MenuItem value="Male">Male</MenuItem>
                 <MenuItem value="Female">Female</MenuItem>
-                <MenuItem value="Other">Other</MenuItem>
               </Select>
             </FormControl>
-            <Button
-              color="secondary"
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setAddModalOpen(true)}
-              size="large"
-              sx={{ whiteSpace: 'nowrap', minWidth: 150 }}
-            >
-              Add Patient
-            </Button>
             {hasActiveFilters && (
               <Button
                 variant="outlined"
@@ -206,24 +177,17 @@ export default function PatientList() {
                 Clear
               </Button>
             )}
+            <Button
+              color="secondary"
+              variant="contained"
+              startIcon={<AddIcon />}
+              onClick={() => setAddModalOpen(true)}
+              size="large"
+              sx={{ whiteSpace: 'nowrap', minWidth: 150 }}
+            >
+              Add Patient
+            </Button>
           </Stack>
-          
-          {!loading && (
-            <Stack direction="row" alignItems="center" gap={1} sx={{ mt: 2 }}>
-              <InfoIcon fontSize="small" color="action" />
-              <Typography variant="body2" color="text.secondary">
-                Showing <strong>{filteredAndSortedPatients.length}</strong> of <strong>{patients.length}</strong> patient{patients.length !== 1 ? 's' : ''}
-              </Typography>
-              {hasActiveFilters && (
-                <Chip 
-                  label="Filtered" 
-                  size="small" 
-                  color="primary" 
-                  icon={<FilterListIcon />} 
-                />
-              )}
-            </Stack>
-          )}
         </Box>
 
         <TableContainer
@@ -358,6 +322,24 @@ export default function PatientList() {
             </TableBody>
           </Table>
         </TableContainer>
+        
+          {!loading && (
+            <Stack direction="row" alignItems="center" gap={1} sx={{ mt: 2 }}>
+              <InfoIcon fontSize="small" color="action" />
+              <Typography variant="body2" color="text.secondary">
+                Showing <strong>{filteredAndSortedPatients.length}</strong> of <strong>{patients.length}</strong> patient{patients.length !== 1 ? 's' : ''}
+              </Typography>
+              {hasActiveFilters && (
+                <Chip 
+                  label="Filtered" 
+                  size="small" 
+                  color="primary" 
+                  icon={<FilterListIcon />}
+                  sx={{ ml: 2 }} 
+                />
+              )}
+            </Stack>
+          )}
       </Box>
 
       <Dialog open={!!deleteTarget} onClose={() => setDeleteTarget(null)}>

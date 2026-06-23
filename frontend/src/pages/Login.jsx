@@ -34,9 +34,15 @@ export default function Login() {
       const res = await apiClient.post('/auth/login', { username, password });
       login(res.data.token);
       showToast('Logged in successfully', 'success');
-      navigate('/patients');
-    } catch {
-      showToast('Invalid username or password', 'error');
+      navigate('/dashboard');
+    } catch (err) {
+      if (err.response?.status === 401) {
+        showToast('Invalid username or password', 'error');
+      } else if (err.response) {
+        showToast('An error occurred. Please try again.', 'error');
+      } else {
+        showToast('Unable to reach the server. Please check your connection.', 'error');
+      }
     } finally {
       setLoading(false);
     }
