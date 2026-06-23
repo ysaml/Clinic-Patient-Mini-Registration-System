@@ -47,7 +47,11 @@ public class PatientsController : ControllerBase
             BirthDate = dto.BirthDate,
             Gender = dto.Gender,
             ContactNumber = dto.ContactNumber,
-            Address = dto.Address
+            Address = dto.Address,
+            ClinicalProfile = dto.ClinicalProfile,
+            Diagnosis = dto.Diagnosis,
+            CurrentMedications = dto.CurrentMedications,
+            LatestLabs = dto.LatestLabs
         };
 
         _db.Patients.Add(patient);
@@ -72,6 +76,10 @@ public class PatientsController : ControllerBase
         patient.Gender = dto.Gender;
         patient.ContactNumber = dto.ContactNumber;
         patient.Address = dto.Address;
+        patient.ClinicalProfile = dto.ClinicalProfile;
+        patient.Diagnosis = dto.Diagnosis;
+        patient.CurrentMedications = dto.CurrentMedications;
+        patient.LatestLabs = dto.LatestLabs;
 
         await _db.SaveChangesAsync();
         return NoContent();
@@ -97,6 +105,10 @@ public class PatientsController : ControllerBase
         BirthDate = p.BirthDate,
         Gender = p.Gender,
         ContactNumber = p.ContactNumber,
-        Address = p.Address
+        Address = p.Address,
+        ClinicalProfile = p.ClinicalProfile,
+        Diagnosis = p.Diagnosis,
+        CurrentMedications = p.CurrentMedications,
+        LatestLabs = p.LatestLabs
     };
 }

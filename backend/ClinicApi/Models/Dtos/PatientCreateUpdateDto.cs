@@ -24,4 +24,16 @@ public class PatientCreateUpdateDto
 
     [Required, StringLength(300)]
     public string Address { get; set; } = string.Empty;
+
+    [StringLength(4000)]
+    public string ClinicalProfile { get; set; } = string.Empty;
+
+    [StringLength(4000)]
+    public string Diagnosis { get; set; } = string.Empty;
+
+    [StringLength(4000)]
+    public string CurrentMedications { get; set; } = string.Empty;
+
+    [StringLength(4000)]
+    public string LatestLabs { get; set; } = string.Empty;
 }

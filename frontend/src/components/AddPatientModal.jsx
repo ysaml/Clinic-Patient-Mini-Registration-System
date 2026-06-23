@@ -110,6 +110,10 @@ const buildPatientForm = (patient) => {
     birthYear: dateParts[0] ?? '',
     gender: patient?.gender ?? '',
     contactNumber: patient?.contactNumber ?? '',
+    clinicalProfile: patient?.clinicalProfile ?? '',
+    diagnosis: patient?.diagnosis ?? '',
+    currentMedications: patient?.currentMedications ?? '',
+    latestLabs: patient?.latestLabs ?? '',
     ...addr,
   };
 };
@@ -191,6 +195,10 @@ export default function AddPatientModal({ open, onClose, onSaved, patient = null
       gender: form.gender,
       contactNumber: form.contactNumber.replace(/\D/g, ''),
       address,
+      clinicalProfile: form.clinicalProfile,
+      diagnosis: form.diagnosis,
+      currentMedications: form.currentMedications,
+      latestLabs: form.latestLabs,
     };
 
     setSaving(true);
@@ -337,6 +345,64 @@ export default function AddPatientModal({ open, onClose, onSaved, patient = null
                 onChange={handleChange} disabled={saving} placeholder="e.g. 1100"
                 error={!!zipError} helperText={zipError}
                 inputProps={{ maxLength: 4, inputMode: 'numeric', pattern: '[0-9]*' }} />
+            </Grid>
+
+            <Grid size={{ xs: 12 }}>
+              <Typography variant="caption" color="text.secondary" sx={{ display: 'block', mb: 0.75 }}>
+                Clinical Dashboard Details
+              </Typography>
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                multiline
+                minRows={3}
+                label="Clinical Profile"
+                name="clinicalProfile"
+                value={form.clinicalProfile}
+                onChange={handleChange}
+                disabled={saving}
+                placeholder="Summary of patient history, risk factors, and relevant notes"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                multiline
+                minRows={3}
+                label="Diagnosis"
+                name="diagnosis"
+                value={form.diagnosis}
+                onChange={handleChange}
+                disabled={saving}
+                placeholder="Primary and secondary diagnosis"
+              />
+            </Grid>
+            <Grid size={{ xs: 12, md: 6 }}>
+              <TextField
+                fullWidth
+                multiline
+                minRows={3}
+                label="Current Medications"
+                name="currentMedications"
+                value={form.currentMedications}
+                onChange={handleChange}
+                disabled={saving}
+                placeholder="Medication names, doses, and schedule"
+              />
+            </Grid>
+            <Grid size={{ xs: 12 }}>
+              <TextField
+                fullWidth
+                multiline
+                minRows={3}
+                label="Latest Labs"
+                name="latestLabs"
+                value={form.latestLabs}
+                onChange={handleChange}
+                disabled={saving}
+                placeholder="Recent laboratory results"
+              />
             </Grid>
 
           </Grid>

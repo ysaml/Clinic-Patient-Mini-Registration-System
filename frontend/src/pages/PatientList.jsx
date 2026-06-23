@@ -13,11 +13,14 @@ import FilterListIcon from '@mui/icons-material/FilterList';
 import ClearIcon from '@mui/icons-material/Clear';
 import WarningIcon from '@mui/icons-material/Warning';
 import InfoIcon from '@mui/icons-material/Info';
+import BadgeIcon from '@mui/icons-material/Badge';
+import { useNavigate } from 'react-router-dom';
 import apiClient from '../api/client';
 import AddPatientModal from '../components/AddPatientModal';
 import { useToast } from '../context/useToast';
 
 export default function PatientList() {
+  const navigate = useNavigate();
   const [patients, setPatients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [deleteTarget, setDeleteTarget] = useState(null);
@@ -309,6 +312,9 @@ export default function PatientList() {
                       {p.address}
                     </TableCell>
                     <TableCell align="right">
+                      <IconButton size="small" color="info" onClick={() => navigate(`/patients/${p.id}`)}>
+                        <BadgeIcon fontSize="small" />
+                      </IconButton>
                       <IconButton size="small" color="primary" onClick={() => handleEditPatient(p)}>
                         <EditIcon fontSize="small" />
                       </IconButton>

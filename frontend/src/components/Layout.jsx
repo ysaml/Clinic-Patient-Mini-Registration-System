@@ -35,7 +35,6 @@ export default function Layout({ children }) {
           </Stack>
           <Tabs
             value={currentTab === -1 ? false : currentTab}
-            onChange={(_, idx) => navigate(NAV_TABS[idx].path)}
             textColor="inherit"
             TabIndicatorProps={{ style: { backgroundColor: 'white' } }}
             sx={{ mx: 2 }}
@@ -46,6 +45,7 @@ export default function Layout({ children }) {
                 label={tab.label}
                 icon={tab.icon}
                 iconPosition="start"
+                onClick={() => navigate(tab.path)}
                 sx={{ textTransform: 'none', fontWeight: 600, minHeight: 48 }}
               />
             ))}

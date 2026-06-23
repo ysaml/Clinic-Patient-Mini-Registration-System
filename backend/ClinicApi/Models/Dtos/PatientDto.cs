@@ -11,4 +11,8 @@ public class PatientDto
     public string Gender { get; set; } = string.Empty;
     public string ContactNumber { get; set; } = string.Empty;
     public string Address { get; set; } = string.Empty;
+    public string ClinicalProfile { get; set; } = string.Empty;
+    public string Diagnosis { get; set; } = string.Empty;
+    public string CurrentMedications { get; set; } = string.Empty;
+    public string LatestLabs { get; set; } = string.Empty;
 }

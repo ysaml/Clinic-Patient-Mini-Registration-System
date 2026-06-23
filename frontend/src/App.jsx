@@ -5,6 +5,7 @@ import Layout from './components/Layout';
 import Login from './pages/Login';
 import Dashboard from './pages/Dashboard';
 import PatientList from './pages/PatientList';
+import PatientProfile from './pages/PatientProfile';
 import { ToastProvider } from './context/ToastProvider';
 
 export default function App() {
@@ -23,6 +24,11 @@ export default function App() {
             <Route path="/patients" element={
               <ProtectedRoute>
                 <Layout><PatientList /></Layout>
+              </ProtectedRoute>
+            } />
+            <Route path="/patients/:id" element={
+              <ProtectedRoute>
+                <Layout><PatientProfile /></Layout>
               </ProtectedRoute>
             } />
           </Routes>
